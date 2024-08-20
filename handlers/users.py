@@ -1,6 +1,6 @@
 from aiogram import Router, F, Bot
-from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, CallbackQuery, Contact
+from aiogram.filters import CommandStart
+from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
 from FSM.states import *
@@ -9,7 +9,12 @@ import keyboards.inline as il
 import keyboards.reply as rp
 from utils.messages import *
 
-from configs import ADMINS_ID, DEV_ID
+from dotenv import dotenv_values
+import os
+
+dotenv = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+
+SYSTEM_ADMINS = [int(dotenv['ADMIN_1_ID']), int(dotenv['ADMIN_2_ID']), int(dotenv['DEV_ID'])]
 
 user = Router()
 
@@ -29,7 +34,7 @@ async def set_language(callback: CallbackQuery, state: FSMContext) -> None:
     language_code = await get_user_language(callback.message.chat.id)
     # print(language_code)
     await callback.message.delete()
-    if callback.message.chat.id in await get_admin_id() + ADMINS_ID + DEV_ID:
+    if callback.message.chat.id in await get_admin_id() + SYSTEM_ADMINS:
         await callback.message.answer(MESSAGES["welcome_message"][language_code],
                                       reply_markup=rp.main_keyboard_for_admins(language_code))
     else:
@@ -79,7 +84,7 @@ async def get_fullname(message: Message, state: FSMContext):
 "Asosiy menyuga qaytish ⬅️"])
 async def back_to_main_menu(message: Message):
     language_code = await get_user_language(message.chat.id)
-    if message.chat.id in await get_admin_id() + ADMINS_ID + DEV_ID:
+    if message.chat.id in await get_admin_id() + SYSTEM_ADMINS:
         await message.answer(MESSAGES["main_menu"][language_code],
                              reply_markup=rp.main_keyboard_for_admins(language_code))
     else:
@@ -114,10 +119,10 @@ async def leave_feedback(message: Message, state: FSMContext) -> None:
 @user.message(Feedback.message)
 async def feedback_saved(message: Message, state: FSMContext, bot: Bot) -> None:
     language_code = await get_user_language(message.chat.id)
-    admins = await get_admin_id() + ADMINS_ID + DEV_ID
+    admins = await get_admin_id() + SYSTEM_ADMINS
     if message.text in list(MESSAGES['cancelled_action'].values()):
         await state.clear()
-        if message.chat.id in await get_admin_id() + ADMINS_ID + DEV_ID:
+        if message.chat.id in await get_admin_id() + SYSTEM_ADMINS:
             await message.answer(MESSAGES["main_menu"][language_code],
                                           reply_markup=rp.main_keyboard_for_admins(language_code))
         else:
@@ -208,7 +213,7 @@ async def contact_seller(callback: CallbackQuery, bot: Bot):
     good_id = int(callback.data.split('_')[-1])
     good = await get_good(good_id)
     consumer_data = await get_consumer_data(callback.message.chat.id)
-    admins = ADMINS_ID + DEV_ID + await get_admin_id()
+    admins = SYSTEM_ADMINS + await get_admin_id()
 
     for admin in admins:
         await bot.send_message(admin,

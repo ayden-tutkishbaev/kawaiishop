@@ -11,9 +11,12 @@ import keyboards.reply as rp
 import keyboards.inline as il
 from utils.messages import *
 
-from configs import DEV_ID, ADMINS_ID
-
+from dotenv import dotenv_values
 import os
+
+dotenv = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+
+SYSTEM_ADMINS = [int(dotenv['ADMIN_1_ID']), int(dotenv['ADMIN_2_ID']), int(dotenv['DEV_ID'])]
 
 admin = Router()
 
@@ -28,7 +31,7 @@ admin = Router()
                                                          ])
 async def admin_mode(message: Message) -> None:
     language_code = await get_user_language(message.chat.id)
-    if message.chat.id in ADMINS_ID + DEV_ID:
+    if message.chat.id in SYSTEM_ADMINS:
         await message.answer(ADMIN_PANEL['staff_welcome'][language_code],
                              reply_markup=rp.creator_panel(language_code))
     else:
@@ -412,6 +415,8 @@ async def add_price_to_goods(message: Message, state: FSMContext):
     data = await state.get_data()
     print(data)
     await insert_good_to_table(data['title'], data['description'], data['category'], data['price'], data['photo'])
+    await message.answer(ADMIN_PANEL['main_menu'][language_code],
+                         reply_markup=await rp.admins_panel(language_code))
     await message.answer(ADMIN_PANEL['good_added_success'][language_code],
                          reply_markup=await il.for_admins_categories_kb(language_code))
     await state.clear()

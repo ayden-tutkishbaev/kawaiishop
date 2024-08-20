@@ -7,9 +7,12 @@ from typing import List
 from dotenv import dotenv_values
 import os
 
-from configs import DB_URL
+from dotenv import dotenv_values
+import os
 
 dotenv = dotenv_values(os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env'))
+
+DB_URL = dotenv['DB_URL']
 
 engine = create_async_engine(url=DB_URL, echo=True)
 

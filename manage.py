@@ -10,7 +10,11 @@ from handlers import users, admins
 
 from database.queries import *
 
-from configs import BOT_TOKEN
+from dotenv import dotenv_values
+
+dotenv = dotenv_values('.env')
+
+BOT_TOKEN = dotenv['BOT_TOKEN']
 
 
 async def main() -> None:
