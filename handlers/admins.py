@@ -416,7 +416,7 @@ async def add_price_to_goods(message: Message, state: FSMContext):
     print(data)
     await insert_good_to_table(data['title'], data['description'], data['category'], data['price'], data['photo'])
     await message.answer(MESSAGES['main_menu'][language_code],
-                         reply_markup=await rp.admins_panel(language_code))
+                         reply_markup=rp.admins_panel(language_code))
     await message.answer(ADMIN_PANEL['good_added_success'][language_code],
                          reply_markup=await il.for_admins_categories_kb(language_code))
     await state.clear()
